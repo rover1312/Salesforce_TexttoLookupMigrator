@@ -1,0 +1,17 @@
+<template>
+    
+    <lightning-card title="TexttoLookup" icon-name="custom:custom14">
+    <template if:true={isConfig}>
+    <lightning-combobox name="object" label="Object" value={value} placeholder="Select an Object" options={options} onchange={handleObjectChange}> </lightning-combobox>
+<!--    <lightning-input label="Field Name" value={fieldName} onchange={handleFieldChange}></lightning-input> -->
+    <lightning-button label="Search" title="Non-primary action" onclick={handleSearch} class="slds-m-left_x-small"></lightning-button>
+    <template if:true={isData}>
+    <lightning-combobox name="TextField" label="TextField" placeholder="Select a text Field" options={data} onchange={handleFieldChange}> </lightning-combobox>
+    <lightning-combobox name="LookupField" label="LookupField" placeholder="Select the Lookup Field" options={data} onchange={handleLookupChange}> </lightning-combobox>
+    <lightning-button label="Start" title="primary action" onclick={handleConfirm} class="slds-m-left_x-small"></lightning-button>
+    <lightning-input data-id="toggle1" type="toggle" label="Fuzzy Search?" onchange={changeFuzzyToggle} unchecked message-toggle-active="" message-toggle-inactive="" ></lightning-input>
+    </template>
+</template>
+
+    </lightning-card> 
+</template>
