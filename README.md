@@ -1,14 +1,14 @@
 # Salesforce_TexttoLookupMigrator
 
-This component would assist in converting text fields to lookup fields, a common requirement during data migration or restructuring. It could include the following features:
+This component would assist in converting text fields to lookup fields, a common requirement during data migration or restructuring. It includes the following features:
 
  
 
-Field Selection: This feature would allow users to select the text field they want to convert into a lookup field.
+Field Selection: This feature will allow users to select the text field they want to convert into a lookup field.
 
  
 
-Mapping Configuration: This feature would enable users to define how the text values map to the records of the lookup object. For example, if a text field contains a user’s full name and it’s being converted to a lookup field of a User object, the component could map the text values to User records based on their ‘Name’ field.
+Mapping Configuration: This feature will enable users to define how the text values map to the records of the lookup object. For example, if a text field contains a user’s full name and it’s being converted to a lookup field of a User object, the component could map the text values to User records based on their ‘Name’ field.
 
  
 
