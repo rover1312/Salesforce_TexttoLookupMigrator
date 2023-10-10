@@ -1,4 +1,4 @@
-global class TexttoLookupBatch implements Database.Batchable<sObject> {
+global class TexttoLookupBatch implements Database.Batchable<sObject>, Database.Stateful {
     public string sObjectApi;
     public string TextField;
     public string LookupField;
@@ -50,7 +50,7 @@ global class TexttoLookupBatch implements Database.Batchable<sObject> {
 		String query = 'Select Id,Name from '+ this.LookupObjectApI + ' Where Name In ('+ textDataString + ')';
 		System.debug(query);
 		List<sObject> MatchedData = Database.query(query);
-
+		System.debug('Matched data debug log: '+ MatchedData);
         textData.clear();
         for(sObject obj: MatchedData){
             textData.add(String.valueOf(obj.get('Name')));
@@ -60,10 +60,12 @@ global class TexttoLookupBatch implements Database.Batchable<sObject> {
             sObject obj = scope[i];
             if(textData.contains(String.valueOf(obj.get(TextField)))){
                 Integer index = textData.indexOf(String.valueOf(obj.get(TextField)));
+                System.debug('Index: ' + index);
+                System.debug(String.valueOf(obj.get(TextField)));
                 if(index != -1 && index < MatchedData.size()){
-                    system.debug('outside If'+String.valueOf(obj.get(this.LookupField)));
-                    if(String.valueOf(obj.get(this.LookupField))=='null'){
+                    if(obj.get(this.LookupField) == null){
                         obj.put(this.LookupField, MatchedData[index].Id);
+                        System.debug('Matched Index Id ' + MatchedData[index].Id);
                     }    
                     updateList.add(obj);
                     System.debug(updateList.size()+ ' size of update List');
@@ -78,11 +80,24 @@ global class TexttoLookupBatch implements Database.Batchable<sObject> {
         String msg = '';
        
         if(this.FuzzyToggle == 'false'){
+
+        }
+        else{
+            
+            List<sObject> fuzzyList = fuzzyMatchAndUpdate(unMatchedList,this.fuzzyDict);
+            updateList.addall(fuzzyList);
+            //Database.SaveResult[] srList = database.update(updateList,false);
+            System.debug('size of List should be 2 ' + updateList.size());
+            
+            
+        }
+        
+        //update operations performed below: 
             Database.SaveResult[] srList = database.update(updateList,false);
             for(Integer i = 0 ; i < srList.size() ; i++){
                 if(srList[i].isSuccess()){
                     msg =  'Success'+ ',' + srList[i].getId()+ ',' + String.valueOf(updateList[i].get(TextField)) + ',' + String.valueOf(updateList[i].get(this.LookupField)) + '\n';
-                    ResultData.add(msg);
+                    This.ResultData.add(msg);
                     System.debug(msg);
                 }
                 else{
@@ -91,34 +106,42 @@ global class TexttoLookupBatch implements Database.Batchable<sObject> {
                         err1 += err.getMessage() + '::';
                     }
                     msg = err1+ ','+srList[i].getId() + ',' +String.valueOf(updateList[i].get(TextField)) + ',' + String.valueOf(updateList[i].get(this.LookupField))+'\n';
-                    ResultData.add(msg);
+                    this.ResultData.add(msg);
                     System.debug(msg);
                 }
             }
     
             for(sObject obj : unMatchedList){
                 msg = 'No Match Found'+ ','+obj.id+',' +String.valueOf(obj.get(TextField)) + ',' +'\n';
-                ResultData.add(msg);
+                this.ResultData.add(msg);
             }
-        }
-        else{
-            
-            List<sObject> fuzzyList = fuzzyMatchAndUpdate(unMatchedList,this.fuzzyDict);
-            updateList.addall(fuzzyList);
-            Database.SaveResult[] srList = database.update(updateList,false);
-            System.debug('size of List should be 2 ' + updateList.size());
-            
-            
-        }
+        
+        System.debug('#################'+ this.ResultData);
         
     }
     
     global void finish(Database.BatchableContext BC) {
-
-        System.debug('In finish');
-
-        
+    System.debug('In finish');
+    
+    // Create the CSV data
+    String Header = 'Success/Error Message,Id,Text Field Value, Lookup Value\n';
+    String Body = '';
+        System.debug('size'+ This.ResultData.size());
+    for (String Msg : this.ResultData) {
+        System.debug(Msg);
+        Body += Msg;
     }
+    String csvData = Header + Body;
+    System.debug('csvData' + csvData);
+
+    Blob csvBlob = Blob.valueOf(csvData);
+    ContentVersion cv = new ContentVersion();
+    cv.Title = 'Text_Lookup_Result' + datetime.now();
+    cv.PathOnClient = cv.Title +'.csv';
+    cv.VersionData = csvBlob;
+    insert cv;
+}
+
     
     
 public List<sObject> fuzzyMatchAndUpdate(List<sObject> scope, List<String> fuzzyDict) {
@@ -159,7 +182,6 @@ public List<sObject> fuzzyMatchAndUpdate(List<sObject> scope, List<String> fuzzy
             updateList.add(obj);
         }
     }
-        System.debug('######Return' + updateList.size());
     Return updateList;
     //database.update(updateList,false);
 }

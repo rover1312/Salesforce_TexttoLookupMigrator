@@ -18,4 +18,21 @@ public class TexttoLookupController {
             throw new AuraHandledException(e.getMessage());
         }
     }
+@AuraEnabled    
+public static String getLatestCSVFile() {
+    Id loggedInUserId = UserInfo.getUserId();
+    List<ContentVersion> cvList = [
+        SELECT Id, Title, VersionData
+        FROM ContentVersion
+        WHERE OwnerId = :loggedInUserId And Title LIKE 'Text_Lookup_Result%'
+        ORDER BY CreatedDate DESC
+        LIMIT 1
+    ];
+    if (!cvList.isEmpty()) {
+        System.debug(cvList[0].VersionData);
+        return cvList[0].VersionData.toString();
+    } else {
+        return null;
+    }
+}
 }

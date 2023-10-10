@@ -13,7 +13,7 @@
                     
                     <lightning-input data-id="toggle1" type="toggle" label="Fuzzy Search?" onchange={changeFuzzyToggle} unchecked message-toggle-active="True" message-toggle-inactive="False"></lightning-input>
 
-                    <template if:true={Fuzzytoggle}>
+                    <template if:true={toggle}>
                         <lightning-input type="text" label="Enter comma separated text" onchange={handleDictionary}></lightning-input>
                     </template>
                     <br>
@@ -34,8 +34,22 @@
                     <div class="slds-p-top_medium">
                         Batch Executed <b>{executedBatch}</b> of <b>{totalBatch}</b>
                     </div>
+                <template if:true={isBatchCompleted}>
+                <lightning-button label="Go to Result" title="Result" onclick={handleResult} class="slds-m-top_medium"></lightning-button>
+                </template>
                 </lightning-layout-item>
             </lightning-layout>
         </template>
+
+    <template if:true = {isResult}>
+        <div class="slds-m-around_medium">
+            <lightning-datatable
+                key-field="Id" 
+                data={Data}
+                columns={columns}
+                hide-checkbox-column="true">
+            </lightning-datatable>
+        </div>
+    </template>
     </lightning-card>
 </template>
