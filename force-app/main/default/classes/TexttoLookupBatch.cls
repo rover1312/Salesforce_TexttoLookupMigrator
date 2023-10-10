@@ -146,8 +146,8 @@ global class TexttoLookupBatch implements Database.Batchable<sObject>, Database.
     
 public List<sObject> fuzzyMatchAndUpdate(List<sObject> scope, List<String> fuzzyDict) {
     Map<String, Id> nameToIdMap = new Map<String, Id>();
-    Map<String, Id> searchToRecordIdMap = new Map<String, Id>();
     List<String> searchList = new List<String>();
+    List<Id> recordIdList = new List<Id>();
 
     for(sObject obj: scope){
         String textFieldValue = String.valueOf(obj.get(TextField));
@@ -155,8 +155,7 @@ public List<sObject> fuzzyMatchAndUpdate(List<sObject> scope, List<String> fuzzy
             for(String fuzzyKey: fuzzyDict){
                 String searchString = textFieldValue + fuzzyKey;
                 searchList.add(searchString.toLowerCase());
-                searchToRecordIdMap.put(searchString.toLowerCase(), obj.Id);
-                
+                recordIdList.add(obj.Id);
             }
         }
     }
@@ -172,18 +171,20 @@ public List<sObject> fuzzyMatchAndUpdate(List<sObject> scope, List<String> fuzzy
     List<sObject> updateList = new List<sObject>();
     for(String key: nameToIdMap.keySet()){
         System.debug(key + 'Key##');
-        System.debug('#############' + searchToRecordIdMap);
-        Id recordId = searchToRecordIdMap.get(key);
-        System.debug(recordId + 'record Id');
-        if(recordId != null){
-			sObject obj = targetType.newSObject(recordId);
-            obj.put(this.LookupField, nameToIdMap.get(key));
-            System.debug(String.valueOf(obj.get(this.LookupField)) + 'lookup value after fuzzy');
-            updateList.add(obj);
+        Integer index = searchList.indexOf(key);
+        if(index != -1){
+            Id recordId = recordIdList.get(index);
+            System.debug(recordId + 'record Id');
+            if(recordId != null){
+                sObject obj = targetType.newSObject(recordId);
+                obj.put(this.LookupField, nameToIdMap.get(key));
+                System.debug(String.valueOf(obj.get(this.LookupField)) + 'lookup value after fuzzy');
+                updateList.add(obj);
+            }
         }
     }
     Return updateList;
-    //database.update(updateList,false);
 }
+
 
 }
