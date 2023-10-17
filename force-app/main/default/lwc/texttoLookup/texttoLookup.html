@@ -10,7 +10,7 @@
                 <div class="slds-p-around_medium">
                     <lightning-combobox name="TextField" label="TextField" placeholder="Select a text Field" options={data} onchange={handleFieldChange}></lightning-combobox>
                     <lightning-combobox name="LookupField" label="LookupField" placeholder="Select the Lookup Field" options={data} onchange={handleLookupChange}></lightning-combobox>
-                    
+                    <br>
                     <lightning-input data-id="toggle1" type="toggle" label="Fuzzy Search?" onchange={changeFuzzyToggle} unchecked message-toggle-active="True" message-toggle-inactive="False"></lightning-input>
 
                     <template if:true={toggle}>
@@ -22,34 +22,43 @@
             </template>
         </template>
 
-        <template if:true={isProcessing}>
-            <lightning-layout if:true={batchJobId}>
-                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" padding="around-small">
-                    <div class="slds-p-top_medium">
-                        Batch Percentage Executed: <b>{executedPercentage}%</b>
-                    </div>
-                    <div class="slds-p-top_medium">
-                        <lightning-progress-bar value={executedIndicator} size="large"></lightning-progress-bar>
-                    </div>
-                    <div class="slds-p-top_medium">
-                        Batch Executed <b>{executedBatch}</b> of <b>{totalBatch}</b>
-                    </div>
-                <template if:true={isBatchCompleted}>
+<template if:true={isProcessing}>
+    <lightning-layout if:true={batchJobId}>
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" padding="around-small">
+            <div class="slds-p-top_medium">
+                Batch Status: <b>{batchStatus}</b>
+            </div>
+            <div class="slds-p-top_medium">
+                Batch Percentage Executed: <b>{executedPercentage}%</b>
+            </div>
+            <div class="slds-p-top_medium">
+                <lightning-progress-bar value={executedIndicator} size="large"></lightning-progress-bar>
+            </div>
+            <div class="slds-p-top_medium">
+                Batch Executed <b>{executedBatch}</b> of <b>{totalBatch}</b>
+            </div>            
+            <template if:true={isBatchCompleted}>
                 <lightning-button label="Go to Result" title="Result" onclick={handleResult} class="slds-m-top_medium"></lightning-button>
-                </template>
-                </lightning-layout-item>
-            </lightning-layout>
-        </template>
+            </template>
+        </lightning-layout-item>
+    </lightning-layout>
+</template>
 
-    <template if:true = {isResult}>
-        <div class="slds-m-around_medium">
-            <lightning-datatable
-                key-field="Id" 
-                data={Data}
-                columns={columns}
-                hide-checkbox-column="true">
-            </lightning-datatable>
+    <template if:true={isResult}>
+    <div class="slds-m-around_medium">
+        <lightning-datatable
+            key-field="Id"
+            data={Data}
+            columns={columns}
+            hide-checkbox-column="true">
+        </lightning-datatable>
+        <div class="slds-m-top_medium">
+            <lightning-button-group>
+                <lightning-button label="Previous" onclick={handlePrev} disabled={isFirstPage}></lightning-button>
+                <lightning-button label="Next" onclick={handleNext} disabled={isLastPage}></lightning-button>
+            </lightning-button-group>
         </div>
-    </template>
+    </div>
+</template>
     </lightning-card>
 </template>

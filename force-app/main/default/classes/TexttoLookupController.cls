@@ -1,10 +1,10 @@
 public class TexttoLookupController {
     @AuraEnabled
-    public static Id Confirm(String lookupFieldName , String textFieldName , String sObjectApi , String Toggle , List<String> dict){
+    public static Id Confirm(String lookupFieldName , String textFieldName , String sObjectApi , String Toggle , List<String> dict , Boolean Overwrite){
         System.debug('this is toggle value:' + Toggle);
         System.debug('Lookup value'+ lookupFieldName);
         System.debug('textFieldName'+ textFieldName);
-        TexttoLookupBatch batch = new TexttoLookupBatch(sObjectApi, textFieldName, lookupFieldName , toggle , dict);
+        TexttoLookupBatch batch = new TexttoLookupBatch(sObjectApi, textFieldName, lookupFieldName , toggle , dict ,Overwrite);
         Id batchJobId = Database.executeBatch(batch,20);
         Return batchJobId;
     }

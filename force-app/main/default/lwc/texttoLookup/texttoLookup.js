@@ -19,10 +19,10 @@ export default class texttoLookup extends LightningElement {
         { label: 'Field Name', fieldName: 'fieldName' },
         { label: 'API Name', fieldName: 'apiName' },
     ];
-
+    @track batchStatus;
     @track options;
     @track batchJobId;
-    @track executedPercentage;
+    @track executedPercentage = 0;
     @track executedIndicator;
     @track executedBatch;
     @track totalBatch;
@@ -36,6 +36,7 @@ export default class texttoLookup extends LightningElement {
     @track columns;
     @track Data = [];
     @track columns1 = [];
+    allData = [];
 
 
     @wire(getOptions)
@@ -92,7 +93,8 @@ export default class texttoLookup extends LightningElement {
             textFieldName: this.fieldName, 
             sObjectApi: this.value,
             Toggle: this.Fuzzytoggle,
-            dict: this.Dictionary
+            dict: this.Dictionary,
+            Overwrite : true
 
         })
         .then(result => {
@@ -122,20 +124,20 @@ export default class texttoLookup extends LightningElement {
     getBatchStatus() {
         getJobDetails({ jobId: this.batchJobId }).then(res => {
             console.log('response => ', res);
-            if (res[0].Status != 'Queued') {
+            console.log(res[0].Status);
+            if (res[0].Status != 'Queued' && res[0].Status != 'Preparing' && res[0].Status != 'Holding') {
                 this.totalBatch = res[0].TotalJobItems;
                 if (res[0].TotalJobItems == res[0].JobItemsProcessed) {
                     this.isBatchCompleted = true;
                 }
+                this.batchStatus = res[0].Status;
                 this.executedPercentage = ((res[0].JobItemsProcessed / res[0].TotalJobItems) * 100).toFixed(2);
                 this.executedBatch = res[0].JobItemsProcessed;
                 var executedNumber = Number(this.executedPercentage);
                 this.executedIndicator = Math.floor(executedNumber);
-                this.refreshBatchOnInterval();  //enable this if you want to refresh on interval
-            }
-            else{
-                this.getBatchStatus();
-            }
+                }
+                this.batchStatus = res[0].Status;
+                this.refreshBatchOnInterval();
         }).catch(err => {
             console.log('err ', err);
 
@@ -149,7 +151,7 @@ export default class texttoLookup extends LightningElement {
             } else {
                 this.getBatchStatus();
             }
-        }, 3000); //refersh view every time
+        }, 10000); //refersh view every time
     }
 
     handleDictionary(event){
@@ -193,9 +195,54 @@ export default class texttoLookup extends LightningElement {
             }
             data.push(obj);
         });
-        this.Data = data;
+        this.allData = data;
     }
+    this.updateData();
     this.isResult = true;
+}
+
+
+
+
+
+
+
+
+
+pageSize = 5; // Number of records to display per page
+pageNumber = 1; // Current page number
+totalPages = Math.ceil(this.allData.length / this.pageSize); // Total number of pages
+isFirstPage = true; // Is this the first page?
+isLastPage = this.totalPages === 1; // Is this the last page?
+
+// Method to handle 'Previous' button click
+handlePrev() {
+    if(this.pageNumber > 1) {
+        this.pageNumber--;
+        this.isFirstPage = this.pageNumber === 1;
+        this.isLastPage = false;
+        this.updateData();
+    }
+}
+
+// Method to handle 'Next' button click
+handleNext() {
+    console.log(this.pageNumber);
+    console.log(this.totalPages);
+    if(this.pageNumber < this.totalPages) {
+        this.pageNumber++;
+        this.isLastPage = this.pageNumber === this.totalPages;
+        this.isFirstPage = false;
+        this.updateData();
+    }
+}
+
+// Method to update the data displayed based on the current page number and page size
+updateData() {
+    this.totalPages =  Math.ceil(this.allData.length / this.pageSize);
+    let start = (this.pageNumber - 1) * this.pageSize;
+    let end = start + this.pageSize;
+    this.Data = this.allData.slice(start, end);
 }
 
 
