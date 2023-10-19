@@ -1,0 +1,9 @@
+public class WrapperClass {
+    public List<sObject> list1 {get; set;}
+    public List<sObject> list2 {get; set;}
+
+    public WrapperClass(List<sObject> list1, List<sObject> list2) {
+        this.list1 = list1;
+        this.list2 = list2;
+    }
+}
